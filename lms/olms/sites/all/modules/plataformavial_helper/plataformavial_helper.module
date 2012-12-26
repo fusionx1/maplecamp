@@ -1,0 +1,59 @@
+<?php
+
+
+
+/**
+ * Implements hook_block_info().
+ */
+function plataformavial_helper_block_info() {
+  $blocks['add-guide-link'] = array(
+    'info' => t('Add Guide Link Block'),
+  );
+
+  return $blocks;
+}
+
+
+/**
+ * Implements hook_block_view().
+ */
+function plataformavial_helper_block_view($delta='') {
+  $block = array();
+  switch ($delta) {
+    case 'add-guide-link':
+      $block['subject'] = '';
+      $block['content'] = plataformavial_helper_add_guide();
+      break;
+
+  }
+  return $block;
+}
+
+/**
+ * Creates placeholder block for links above .
+ */
+function plataformavial_helper_add_guide() {
+ 
+  global $user;
+  $node = node_load(arg(1));
+  //$bid = $node->book['bid'];
+  //echo "<pre>";
+  //print_r($node);
+  //echo "</pre>";
+  $tema = $node->field_tema['und'][0]['value'];
+  $tid = $node->field_test_type['und'][0]['tid'];
+  $term = taxonomy_term_load($tid);
+  $title = $term->name;
+
+ 
+  $html = "<div class='test-type'><h2>$title</h2></div>";
+  $html .= "<div class='test-title'><span><label>Pop Prueba de control: </label></span><span>$node->title</span></div>";
+  $html .= "<div class='test-tema'><span><label>Tema: </label></span><span>$tema</span></div>";
+  $html .= "<div class='test-user'><span><label>Usuario: </label></span><span>$user->name</span></div>";
+  return $html;
+}
+
+
+
+
+?>

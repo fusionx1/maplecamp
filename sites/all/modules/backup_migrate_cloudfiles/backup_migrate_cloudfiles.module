@@ -1,0 +1,113 @@
+<?php
+
+/**
+ * @file
+ * Create (manually or scheduled) and restore backups of your Drupal MySQL
+ * database using the Rackspace CLoudfiles service
+ */
+
+/******************************************************************************
+ * Module dependencies
+ ******************************************************************************/
+
+include_once(implode(
+  DIRECTORY_SEPARATOR, 
+  array(
+    drupal_get_path('module', 'backup_migrate_cloudfiles'),
+    'phpwhois',
+    'whois.main.php',
+  )
+));
+
+/******************************************************************************
+ * Module constants
+ ******************************************************************************/
+
+// Debug constant that enables logging functions and disables filter caching for this module
+define('RSCF_DEBUG', FALSE);
+define('RSCF_LOG_TYPE', 'cloudfiles');
+
+// Constants for system variables
+define('RSCF_SERVER_ADDR', 'backup_migrate_cloudfiles_server_addr');
+define('RSCF_RS_SERVER', 'backup_migrate_cloudfiles_rs_server');
+
+/******************************************************************************
+ * Drupal Hooks
+ ******************************************************************************/
+
+/**
+ * Implementation of hook_init
+ */
+function backup_migrate_cloudfiles_init() {
+}
+
+/******************************************************************************
+ * Backup Migrate Hooks
+ ******************************************************************************/
+
+/**
+ * Implementation of hook_backup_migrate_destination_types().
+ */
+function backup_migrate_cloudfiles_backup_migrate_destination_types() {
+  return array(
+    'cloudfiles' => array(
+      'type_name' => t('Rackspace Cloudfiles'),
+      'description' => t('Save the backup files to a !link account.', array('!link' => l(t('Rackspace Cloudfiles'), 'http://www.rackspace.com/cloud/cloud_hosting_products/files/'))),
+      'file' => drupal_get_path('module', 'backup_migrate_cloudfiles') .'/destinations.cloudfiles.inc',
+      'class' => 'backup_migrate_destination_cloudfiles',
+      'can_create' => TRUE,
+    ),
+  );
+}
+
+/******************************************************************************
+ * Private utility methods
+ ******************************************************************************/
+
+/**
+ * Generates a watchdog log entry during debugging; when debugging is disabled, nothing happens.
+ */
+function _backup_migrate_cloudfiles_dbg($msg, $vars = array(), $severity = WATCHDOG_DEBUG, $link = NULL) {
+  if (RSCF_DEBUG) {
+    // Catch passed-in objects or arrays and dump them accordingly
+    if (is_array($msg) || is_object($msg)) {
+      $msg = '<pre>' . print_r($msg, TRUE) . '</pre>';
+    }
+    watchdog(RSCF_LOG_TYPE, $msg, $vars, $severity, $link);
+  }
+}
+
+/**
+ * Generates a watchdog log entry during execution of module
+ */
+function _backup_migrate_cloudfiles_log($msg, $vars = array(), $severity = WATCHDOG_INFO, $link = NULL) {
+  // Catch passed-in objects or arrays and dump them accordingly
+  if (is_array($msg) || is_object($msg)) {
+    $msg = print_r($msg, TRUE);
+  }
+  watchdog(RSCF_LOG_TYPE, $msg, $vars, $severity, $link);
+}
+
+/**
+ * Attempt to automagically detect a Rackspace-hosted server so we can flip on the high-bandwidth, no-cost transfer mode
+ */
+function _backup_migrate_cloudfiles_is_rs_server() {
+  // Check to see if the current address matches the previously checked address (in case of  a site move)
+  $is_rs_server = variable_get(RSCF_RS_SERVER, FALSE);
+  $last_addr = variable_get(RSCF_SERVER_ADDR, '');
+  if ($last_addr != $_SERVER["SERVER_ADDR"]) {
+    // If we need to check, execute a WHOIS query on the IP address
+    $whois = new Whois();
+    $result = $whois->Lookup($_SERVER["SERVER_ADDR"]);
+    if ($result) {
+      // If we recevied a good result, then save new address
+      variable_set(RSCF_SERVER_ADDR, $_SERVER["SERVER_ADDR"]);
+      
+      // Now see if the work "rackspace" shows up anywhere in the WHOIS result
+      $is_rs_server = (stristr(print_r($result, TRUE), 'rackspace')) ? TRUE : FALSE;
+      variable_set(RSCF_RS_SERVER, $is_rs_server);
+    }
+  }
+  
+  return $is_rs_server;
+}

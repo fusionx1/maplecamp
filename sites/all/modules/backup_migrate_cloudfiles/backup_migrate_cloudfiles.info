@@ -1,0 +1,15 @@
+name = Backup and Migrate Rackspace Cloudfiles 
+description = "Allows Back and Migrate to save the backup files to a Rackspace Cloudfiles container"
+core = 7.x
+
+dependencies[] = backup_migrate
+
+files[] = backup_migrate_cloudfiles.install
+files[] = backup_migrate_cloudfiles.module
+files[] = destinations.cloudfiles.inc
+; Information added by drupal.org packaging script on 2012-03-20
+version = "7.x-1.0"
+core = "7.x"
+project = "backup_migrate_cloudfiles"
+datestamp = "1332224142"
+

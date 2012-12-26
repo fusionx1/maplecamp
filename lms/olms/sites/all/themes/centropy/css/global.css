@@ -1,0 +1,26 @@
+/* This file will hold styles for the mobile version of your website (mobile first). */
+/* This also can include ANY global CSS that applies site-wide. Unless overwritten by a more specific style rule, CSS declarations in global.css will apply site-wide. */
+
+body{
+  background: url('../images/mainbg1.jpeg') no-repeat scroll 0 0 #737C7B;
+}
+
+#region-sidebar-first,
+#region-sidebar-second{
+  background-color: #FFFFFF;
+  border-radius: 5px 5px 5px 5px;
+  padding: 10px 0px 10px 0px;
+}
+
+#block-book-navigation{
+  margin-left: 15px;
+}
+
+#region-content{
+  background-color: #FFFFFF;
+  border-radius: 5px 5px 5px 5px;
+  padding: 0;
+}
+#quiz-view-table {
+  display: none; 
+}
